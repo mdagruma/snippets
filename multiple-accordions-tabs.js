@@ -1,22 +1,24 @@
 $(document).ready(function () {
-	
+
+  // get querystring parameters and set variables
+  var view = get_urid('view');
+  var system = get_urid('system');
+
 	// MULTIPLE ACCORDIONS AND TABS (WITH QUERY STRING AND SCROLL OPTIONS)
 
   //Begin Accordion Functionality
 
   // hide all accordion content 
   // (the next element after the accordion header)
-	$('.expand')
-		.next()
-		.hide();
+	// $('.expand')
+	// 	.next()
+	// 	.hide();
 
   // Use "view" querystring parameter to determine
-  // which accordion item to show on load
-	var item = get_urid('view');
-	item = parseInt(item);
-	if(item) {
-		openAccordion($('#' + item));
-	}
+  // which accordion view to show on load
+	// if(view) {
+	// 	openAccordion($('#' + view));
+	// }
   // End Accordion Functionality
 
 	// MULTIPLE TABS
@@ -29,10 +31,9 @@ $(document).ready(function () {
 
   // get "system" querystring parameter to determine which
   // tabbed system we will be focusing on
-	var system = get_urid('system');
 
-  
-	if(item) {
+
+	if(view) {
   	if(system) {
       var selector = '#tab-system0' + system;
       scrollToDiv($(selector));
@@ -47,7 +48,7 @@ $(document).ready(function () {
     });
 
     $(selector + ' .tab').each(function() {
-     	if($(this).index() == item - 1) {
+     	if($(this).index() == view - 1) {
         $(this).show();
      	} else {
       	$(this).hide();
@@ -60,9 +61,9 @@ $(document).ready(function () {
     });
 
     $(selector + ' .tabs').each(function() {
-      item = item.toString();
+      view = view.toString();
       $('.tabs-nav li', this).removeClass('current');
-      $('.tabs-nav li:nth-child(' + item + ')', this).addClass('current');
+      $('.tabs-nav li:nth-child(' + view + ')', this).addClass('current');
     });
   } else {
     $('.tab').each(function() {
@@ -105,29 +106,29 @@ $('.expand').on('click', function () {
 	return false;
 });
 
-function closeAccordion(item) {
-	$(item)
-		.next()
-		.slideUp('fast');
-	$(item).removeClass('expanded');
-}
+// function closeAccordion(view) {
+// 	$(view)
+// 		.next()
+// 		.slideUp('fast');
+// 	$(view).removeClass('expanded');
+// }
 
-function openAccordion(item) {
-	$('.expanded').each(function () {
-		$(this)
-			.next()
-			.slideUp('fast');
-		$(this).removeClass('expanded');
-	});
-	$(item)
-		.next()
-		.slideDown('fast', function () {
-            if ($(item).hasClass('scroll-to-element')) {
-			    scrollToDiv($(this));
-            }
-		});
-	$(item).addClass('expanded');
-}
+// function openAccordion(view) {
+// 	$('.expanded').each(function () {
+// 		$(this)
+// 			.next()
+// 			.slideUp('fast');
+// 		$(this).removeClass('expanded');
+// 	});
+// 	$(view)
+// 		.next()
+// 		.slideDown('fast', function () {
+//             if ($(view).hasClass('scroll-to-element')) {
+// 			    scrollToDiv($(this));
+//             }
+// 		});
+// 	$(view).addClass('expanded');
+// }
 
 function scrollToDiv(element) {
 	var offset = element.offset();
