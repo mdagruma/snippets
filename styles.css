@@ -32,7 +32,8 @@ body {
   border-right: none;
 }
 
-.tabs-nav li:hover {
+.tabs-nav li:hover,
+.tabs-nav li.current {
   cursor: pointer;
   background: #eee;
   color: #cc0000;
