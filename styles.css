@@ -7,7 +7,37 @@ body {
 
 .tab-system {
   margin: 40px;
-  padding: 10px;
   border: 1px solid #ddd;
   display: block;
+}
+
+.tabs-nav {
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.tabs-nav li {
+  list-style: none;
+  line-height: 1em;
+  padding: 30px 0;
+  text-align: center;
+  flex: 1 1 25%;
+  background: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
+.tabs-nav li:after {
+  border-right: none;
+}
+
+.tabs-nav li:hover {
+  cursor: pointer;
+  background: #eee;
+  color: #cc0000;
+}
+
+.tabs-content {
+  padding: 30px;
 }
