@@ -1,0 +1,553 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Functional Test</title>
+<style>
+
+body {
+	background-color: #f4f1e9;
+}
+
+.clear {
+	clear: both;
+	height: 0px !important;
+}
+
+/* This style keeps mojoPortal from tossing out buttons that use sprites but no text. */
+
+.sprite {
+	font-size: 0px;
+	line-height: 0px;
+}
+
+/* ROTATOR STYLES */
+
+.gallery {
+	width: 581px;
+	height: 386px;
+	margin: 0 auto;
+	overflow: hidden;
+	-webkit-user-select: none;
+	padding: 5px;
+	box-shadow: 0 -2px 5px #ccc;	
+	background-color: #fff;	
+}
+		
+.gallery-feature {
+	position: relative;	
+	width: 581px;
+	overflow: hidden;
+	height: 100%;
+	margin: 0 auto;
+}
+		
+.gallery-inner {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.gallery .slide {
+	float: left;
+	position: relative;
+	width: 581px;
+	display: none;
+}
+
+.gallery .slide img {
+	opacity: 0.8;
+}
+
+.gallery .slide.active img {
+	opacity: 1 !important;
+}
+
+.gallery .slide.active {
+	opacity: 1;	
+	display: block;
+}
+
+.gallery-nav {
+	position: relative;
+	bottom: 235px;
+	width: 620px;
+	margin: 0 auto;
+	text-align: center;
+	display: none;
+	z-index: 2;
+}
+
+.prev {
+	float: left;
+	background: url('btn-rotator-arrows.png') no-repeat 0 0;
+}
+
+.next {
+	float: right;
+	background: url('btn-rotator-arrows.png') no-repeat -43px 0;	
+}
+
+.prev, .next {
+	display: block;
+	width: 43px;
+	height: 43px;	
+	cursor: pointer;
+}
+
+.prev:hover {
+	background: url('btn-rotator-arrows.png') no-repeat 0 -43px;
+}
+
+.next:hover {
+	background: url('btn-rotator-arrows.png') no-repeat -43px -43px;
+}
+
+.gallery-indication {
+	position: relative;
+	bottom: 80px;
+	height: 13px;
+	text-align: right;
+	z-index: 2; 
+}
+
+.slide_indicator {
+	display: inline-block;
+	float: right;
+	width: 55px;
+	padding: 0;
+	margin: 0;
+	list-style: none;		
+}
+
+.indicator {
+	display: block;
+	float: left;
+	width: 13px;
+	height: 13px;
+	margin: 0;
+	background: url('rotator-pagination.png') no-repeat -13px 0;	
+}
+
+.indicator.active {
+	background: url('rotator-pagination.png') no-repeat 0 0;	
+}
+
+.indicator_right {
+	margin-right: 3px !important;
+}
+
+/* ROTATOR CONTENT BOX */
+
+.gallery-content-container {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 581px;
+	height: 64px;
+	background-color: #fff;
+	opacity: 0.8;
+}
+
+.gallery-content {
+	position: relative;
+	padding: 10px 0 0 15px;
+	color: #2d2a2b;
+}
+
+.gallery-content h2 {
+	font: 21px Georgia, "Times New Roman", Times, serif;
+	padding: 0;
+	margin: 0;
+}
+
+.gallery-content h3 {
+	font: 300 16px 'Oxygen', serif;
+	padding: 0;
+	margin: 0;
+}
+
+
+
+</style>
+
+</head>
+
+<body>
+
+<div class="gallery">
+    <div class="gallery-feature">
+		<div class="gallery-inner" id="gallery-inner"></div>
+	</div>
+    <div class="gallery-indication">
+    </div>
+</div>
+<div class="gallery-nav">
+    <a class="prev sprite">&lt;</a>
+    <a class="next sprite">&gt;</a>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+	var startSlide = 1; 
+var randomSlide = false; 
+
+$(document).ready(function() {	
+	$.ajax({
+		type: 'GET',
+		url: 'gallery.xml', // Change this to the URL of the XML file that is being used on the site. 
+		dataType: 'xml',
+		success: parseXML
+	});
+
+	// BELOW IS THE SLIDER SCRIPT. 
+	// Indication HTML can be changed on lines 99-101
+	// XML function parameters can be changes on lines 346 - 354
+	
+	$(document).on('click', '.indicator', function() {
+		var slideNumberClicked = $(this).attr('id');
+		slideNumberClicked = slideNumberClicked.split('indicate-');
+		slideNumberClicked = parseInt(slideNumberClicked[1]);
+		var activeSlide = $('.slide.active').attr('id');
+		if (activeSlide != undefined) {
+			var slideNum = activeSlide.split('slide');
+			slideNum = parseInt(slideNum[1]) + 1;
+			var difference = slideNumberClicked - slideNum;
+			if (difference != undefined && difference != 0) {
+				$('.active').removeClass('active');
+				jumpToSpecificSlide(difference);
+			}
+		}
+		return false;
+	});
+	
+	$('.next').click(function() {
+		$('.active').removeClass('active');
+		goToNextSlide();
+	});
+	
+	$('.prev').click(function() {
+		$('.active').removeClass('active');
+		goToPrevSlide();
+	});
+
+});
+
+function buildSlider() {	
+	var numSlides = $('.slide').length;
+	
+	if (randomSlide == true) {
+		var randomMultiplier = Math.random();
+		var randomNumber = Math.floor(randomMultiplier * numSlides) + 1;
+		startSlide = randomNumber;
+	}
+	
+	if (startSlide > numSlides) { 
+		startSlide = 1;	
+	}
+	
+	var navLinks;
+	$('.slide.active').removeClass('active');
+	$('.slide').show();
+	$('.slide-content').hide();
+	$('.gallery-nav').show();
+	if(navLinks == false) {
+		$('.next').hide();
+		$('.prev').hide();
+	}
+	
+	$('.gallery-inner').css('width', 100 * numSlides + '%');
+	$('.slide').css('width', 100 / numSlides + '%');			
+	
+	$('.slide').each(function(e) {
+		if (e == startSlide - 1) {
+			$(this).addClass('active');
+		}
+		$(this).attr({
+			id: 'slide' + e,
+			title: ''
+		});
+	});
+	
+	if (startSlide == 1) {
+		var lastItem = $('.slide').last();
+		lastItem.remove();
+		$('.gallery-inner').prepend(lastItem);
+	} else if (startSlide > 2) {
+		for (i=1; i< startSlide - 1; i++) {
+			var firstItem = $('.slide').first();
+			firstItem.remove();
+			$('.gallery-inner').append(firstItem);
+		}
+	}
+	$('.gallery-inner').css('left', 0);
+	
+	var currentPos = $('.gallery-inner').position().left;
+	var newPos = currentPos - 100;
+	$('.gallery-inner').animate({
+		left: newPos + '%'
+	});
+	
+	$('.gallery-indication').prepend('<div class="slide-indicator"></div>');
+	for (i=1; i<=numSlides; i++) {
+		$('.slide-indicator').append('<a class="indicator icon-indication" id="indicate-' + i + '" href="#"></a>');
+	}
+	
+	$('#indicate-' + startSlide).addClass('active');	
+
+
+$(window).load(function() {
+	var activeHeight = $('.active').height();
+	$('.gallery').animate({
+		height: activeHeight
+	});
+});
+
+var rtime = new Date(1, 1, 2000, 12,00,00);
+var timeout = false;
+var delta = 200;
+$(window).resize(function() {
+	rtime = new Date();
+	if (timeout === false) {
+		timeout = true;
+		setTimeout(resizeend, delta);
+	}
+});
+
+function resizeend() {
+	if (new Date() - rtime < delta) {
+		setTimeout(resizeend, delta);
+	} else {
+		timeout = false;
+		resizeGallery();
+	}               
+}		
+
+var startX, curX, swipeDistance, origPos, currentPos, newPos, deviceWidth;
+var startY, curY, yDistance, bodyPos, yScrolled, firstItems, lastItems, yDistAbs, swipeDistAbs, scrollPosOnTouch, scrollPosOnEnd;
+var targetHref;
+
+var swipeThreshold = 30;
+var galleryInner = document.getElementById('gallery-inner');
+var touchstart = function(event) {  
+	if (event.originalEvent.touches.length == 1) {
+			startX = event.originalEvent.touches[0].pageX;
+			startY = event.originalEvent.touches[0].pageY;
+			origPos = - 100; 
+	} else {
+		touchcancel(event);	
+	}
+	
+	deviceWidth = $(window).width();
+	if ($(event.target).parent().attr('href')) {
+		targetHref = $(event.target).parent().attr('href');
+	}
+	
+	scrollPosOnTouch = $(document).scrollTop();
+};  
+
+var touchmove = function(event) {  
+	curX = event.originalEvent.touches[0].pageX;
+	swipeDistance = curX - startX;
+	swipeDistAbs = Math.abs(swipeDistance);
+	curY = event.originalEvent.touches[0].pageY;
+	yDistance = curY - startY;
+	yDistAbs = Math.abs(yDistance);
+	
+	if(swipeDistAbs > yDistAbs) {
+		if (event.originalEvent.touches.length == 1) {
+			$('.active').removeClass('active');
+			newPos = parseInt(origPos) + ((swipeDistance/deviceWidth) * 100);
+			$('.gallery-inner').css('left', newPos + '%');
+		} else {
+			touchcancel(event);
+		}
+		return false;
+	} 
+};  
+
+var touchend = function(event) {  
+	scrollPosOnEnd = $(document).scrollTop();
+	if (swipeDistAbs + 10 > yDistAbs && scrollPosOnTouch == scrollPosOnEnd) {
+		if (swipeDistance <= -swipeThreshold) {
+			goToNextSlide(origPos);
+		} else if (swipeDistance >= swipeThreshold) {
+			goToPrevSlide(origPos);
+		} else { 
+			returnToCurrentSlide(origPos);
+		}
+	} else {
+		if ($('.gallery-inner').position().left == origPos) {
+			// do nothing
+		} else {
+		returnToCurrentSlide(origPos);
+		}
+	}
+	touchcancel(event);
+};  
+
+var touchcancel = function(event) {  
+	swipeDistance = 0;
+	yDistance = 0;
+	swipeDistAbs = 0;
+	yDistAbs = 0;
+};  
+
+$('.gallery-inner')
+	.bind('touchstart', touchstart)
+	.bind('touchmove', touchmove)
+	.bind('touchend', touchend)
+	.bind('touchcancel', touchcancel);  	
+} // End buildSlider function
+
+function goToNextSlide() {
+	newPos = - 100 * 2;		
+	$('.gallery-inner').animate({
+		left: newPos + '%'
+	}, function() {
+		nextSlide();
+	});
+}
+
+function goToPrevSlide() {
+	newPos = 0;
+
+	$('.gallery-inner').animate({
+		left: newPos + '%'
+	}, function() {
+		prevSlide();
+	});
+}
+
+function nextSlide() {
+	newPos = -100;
+	$('.gallery-inner').css('left', newPos + '%');
+	
+	var firstItem = $('.slide').first();
+	firstItem.remove();
+	$('.gallery-inner').append(firstItem);
+	
+	$('.slide').each(function(e) {
+		if(e == 1) {
+			$(this).addClass('active');
+		}
+	});
+	updateIndicator();
+	resizeGallery();
+}
+
+function prevSlide() {
+	newPos = -100; 
+	$('.gallery-inner').css('left', newPos + '%');
+	
+	var lastItem = $('.slide').last();
+	lastItem.remove();
+	$('.gallery-inner').prepend(lastItem);
+
+	$('.slide').each(function(e) {
+		if (e == 1) {
+			$(this).addClass('active');				
+		}
+	});
+	updateIndicator();
+	resizeGallery();
+}
+
+function jumpToSpecificSlide(slidesToMove) {
+	if (slidesToMove != undefined && slidesToMove > 0) {
+		if (slidesToMove > 1) { 
+			for (i=0; i<slidesToMove; i++) {
+				var firstItem = $('.slide').first();
+				firstItem.remove();
+				$('.gallery-inner').append(firstItem);
+			}
+			newPos = - 100 * (slidesToMove + 1);
+			$('.gallery-inner').animate({
+				left: newPos + '%'
+			}, 200, function() {
+				newSlide(slidesToMove);
+			});
+		} else {
+			goToNextSlide();
+		}
+	} else if (slidesToMove != undefined && slidesToMove < 0) {
+		if (slidesToMove < -1) {
+			for (i=0; i>slidesToMove; i--) {
+				var lastItem = $('.slide').last();
+				lastItem.remove();
+				$('.gallery-inner').prepend(lastItem);
+			}
+			newPos = 0;
+			$('.gallery-inner').animate({
+				left: newPos + '%'
+			}, 200, function() {
+				newSlide(slidesToMove);
+			});
+		} else {
+			goToPrevSlide();
+		}
+	}
+}
+			
+function newSlide(slidesToMove) {
+	newPos = -100;
+	$('.gallery-inner').css('left', newPos + '%');
+
+	$('.slide').each(function(e) {
+		if(e == 1) {
+			$(this).addClass('active');
+		}
+	});
+	updateIndicator();
+	resizeGallery();
+}
+			
+function returnToCurrentSlide(position) {
+	$('.gallery-inner').animate({
+		left: position + '%'
+	}, function() {
+		$('.slide').each(function(e) {
+			if(e == 1) {
+				$(this).addClass('active');
+			}
+		});
+		updateIndicator();
+	});
+}
+
+function rotateSlides() {
+	$('.active').removeClass('active');
+	goToNextSlide();
+}
+
+function updateIndicator() {
+	var activeSlide = $('.slide.active').attr('id');
+	var slideNum = activeSlide.split('slide');
+	slideNum = parseInt(slideNum[1]) + 1;
+	$('#indicate-' + slideNum).addClass('active');
+}
+
+function resizeGallery() {
+	var activeHeight = $('.active').height();
+	$('.gallery').animate({
+		height: activeHeight
+	});
+}
+
+function parseXML(xml) {
+	$(xml).find('slide').each(function() {
+		var slide = $(this);
+		var imgURL = slide.find('image').text();
+		var imgAlt = slide.find('alt').text();
+		var slideHeader = '<h2>' + slide.find('title').text() + '</h2>';
+		var slideSubhead = '<h3>' + slide.find('desc').text() + '</h3>';
+		
+		$('.gallery-inner').append('<div class="slide"><img src="' + imgURL + '"' + '"alt="' + imgAlt + '" />' + '<div class="gallery-content-container"><div class="gallery-content">' + slideHeader + slideSubhead + '</div></div>' + '</div>');
+	});
+	buildSlider();
+}
+
+</script>	
+</body>
+</html>
