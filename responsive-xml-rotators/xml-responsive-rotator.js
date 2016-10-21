@@ -1,5 +1,15 @@
-var startSlide = 1; 
-var randomSlide = false; 
+// XML RESPONSIVE ROTATOR CUSTOM OPTIONS
+
+var startSlide = 1; // Determines which slide the rotator starts on
+var randomSlide = false; // Set to 'true' to have the rotator start on a random slide
+
+var effectRotate = false; // Set to 'true' to have slides rotate
+var effectFade = true; // Set to 'true' to have slides fade 
+
+var autoRotate = false; // Set to 'true' to have slides auto rotate
+var autoRotateSeconds = 8; // Determines how many seconds between auto rotations if autoRotate is set to 'true'
+
+// END CUSTOM OPTIONS
 
 $(document).ready(function() {	
 	$.ajax({
@@ -13,6 +23,10 @@ $(document).ready(function() {
 	// Indication HTML can be changed on lines 99-101
 	// XML function parameters can be changes on lines 346 - 354
 	
+	if (effectFade) {
+		$('.gallery-inner').addClass('gallery-fade');
+	}
+	
 	$(document).on('click', '.indicator', function() {
 		var slideNumberClicked = $(this).attr('id');
 		slideNumberClicked = slideNumberClicked.split('indicate-');
@@ -25,20 +39,27 @@ $(document).ready(function() {
 			if (difference != undefined && difference != 0) {
 				$('.active').removeClass('active');
 				jumpToSpecificSlide(difference);
+				pauseGallery();
+				runRotateSlides();
 			}
 		}
 		return false;
 	});
 	
 	$('.next').click(function() {
-		$('.active').removeClass('active');
+		$('.active').removeClass('active');	
 		goToNextSlide();
+		pauseGallery();
+		runRotateSlides();
 	});
 	
 	$('.prev').click(function() {
 		$('.active').removeClass('active');
 		goToPrevSlide();
+		pauseGallery();
+		runRotateSlides();
 	});
+	runRotateSlides();
 
 });
 
@@ -55,18 +76,28 @@ function buildSlider() {
 		startSlide = 1;	
 	}
 	
+	if (effectRotate) {
+		$('.slide').show();
+	}
+	
 	var navLinks;
-	$('.slide.active').removeClass('active');
-	$('.slide').show();
-	$('.slide-content').hide();
-	$('.gallery-nav').show();
-	if(navLinks == false) {
+	if (navLinks == false) {
 		$('.next').hide();
 		$('.prev').hide();
 	}
 	
-	$('.gallery-inner').css('width', 100 * numSlides + '%');
-	$('.slide').css('width', 100 / numSlides + '%');			
+	if (effectRotate == true) {
+		$('.gallery-inner').css('width', 100 * numSlides + '%');
+		$('.slide').css('width', 100 / numSlides + '%');
+		
+		var currentPos = $('.gallery-inner').position().left;
+		var newPos = currentPos - 100;
+		$('.gallery-inner').animate({
+			left: newPos + '%'
+		});
+	} else if (effectFade == true) {
+		$('.gallery-inner, .slide').css('width', 100 + '%');
+	}
 	
 	$('.slide').each(function(e) {
 		if (e == startSlide - 1) {
@@ -83,7 +114,7 @@ function buildSlider() {
 		lastItem.remove();
 		$('.gallery-inner').prepend(lastItem);
 	} else if (startSlide > 2) {
-		for (i=1; i< startSlide - 1; i++) {
+		for (i = 1; i < startSlide - 1; i++) {
 			var firstItem = $('.slide').first();
 			firstItem.remove();
 			$('.gallery-inner').append(firstItem);
@@ -91,17 +122,12 @@ function buildSlider() {
 	}
 	$('.gallery-inner').css('left', 0);
 	
-	var currentPos = $('.gallery-inner').position().left;
-	var newPos = currentPos - 100;
-	$('.gallery-inner').animate({
-		left: newPos + '%'
-	});
 	
+	// INDICATION
 	$('.gallery-indication').prepend('<div class="slide-indicator"></div>');
-	for (i=1; i<=numSlides; i++) {
+	for (i = 1; i <= numSlides; i++) {
 		$('.slide-indicator').append('<a class="indicator icon-indication" id="indicate-' + i + '" href="#"></a>');
 	}
-	
 	$('#indicate-' + startSlide).addClass('active');	
 
 
@@ -212,26 +238,37 @@ $('.gallery-inner')
 
 
 function goToNextSlide() {
-	newPos = - 100 * 2;		
-	$('.gallery-inner').animate({
-		left: newPos + '%'
-	}, function() {
+	if (effectRotate) {
+		newPos = - 100 * 2;		
+		$('.gallery-inner').animate({
+			left: newPos + '%'
+		}, function() {
+			nextSlide();
+		});
+	} else {
 		nextSlide();
-	});
+	}
 }
 
 function goToPrevSlide() {
-	newPos = 0;
-
-	$('.gallery-inner').animate({
-		left: newPos + '%'
-	}, function() {
-		prevSlide();
-	});
+	if (effectRotate) {
+		newPos = 0;
+		$('.gallery-inner').animate({
+			left: newPos + '%'
+		}, function() {
+			prevSlide();
+		});
+	} else {
+ 		prevSlide();
+	}
 }
 
 function nextSlide() {
-	newPos = -100;
+	if (effectRotate) {
+		newPos = -100;
+	} else {
+		newPos = 0;
+	}
 	$('.gallery-inner').css('left', newPos + '%');
 	
 	var firstItem = $('.slide').first();
@@ -248,7 +285,11 @@ function nextSlide() {
 }
 
 function prevSlide() {
-	newPos = -100; 
+	if (effectRotate) {
+		newPos = -100;
+	} else {
+		newPos = 0;
+	}
 	$('.gallery-inner').css('left', newPos + '%');
 	
 	var lastItem = $('.slide').last();
@@ -264,10 +305,11 @@ function prevSlide() {
 	resizeGallery();
 }
 
+
 function jumpToSpecificSlide(slidesToMove) {
 	if (slidesToMove != undefined && slidesToMove > 0) {
 		if (slidesToMove > 1) { 
-			for (i=0; i<slidesToMove; i++) {
+			for (i = 0; i < slidesToMove; i++) {
 				var firstItem = $('.slide').first();
 				firstItem.remove();
 				$('.gallery-inner').append(firstItem);
@@ -283,7 +325,7 @@ function jumpToSpecificSlide(slidesToMove) {
 		}
 	} else if (slidesToMove != undefined && slidesToMove < 0) {
 		if (slidesToMove < -1) {
-			for (i=0; i>slidesToMove; i--) {
+			for (i = 0; i > slidesToMove; i--) {
 				var lastItem = $('.slide').last();
 				lastItem.remove();
 				$('.gallery-inner').prepend(lastItem);
@@ -329,6 +371,18 @@ function returnToCurrentSlide(position) {
 function rotateSlides() {
 	$('.active').removeClass('active');
 	goToNextSlide();
+}
+
+function runRotateSlides() {
+	if (autoRotate) {
+		rotate = setInterval('rotateSlides()', autoRotateSeconds * 1000);
+	}
+}
+
+function pauseGallery() {
+	if (autoRotate) {
+		clearTimeout(rotate);
+	}
 }
 
 function updateIndicator() {
