@@ -1,11 +1,15 @@
+// XML RESPONSIVE ROTATOR CUSTOM OPTIONS
+
 var startSlide = 1; // Determines which slide the rotator starts on
 var randomSlide = false; // Set to 'true' to have the rotator start on a random slide
 
-var effectRotate = true;
-var effectFade = false;
+var effectRotate = true; // Set to 'true' to have slides rotate
+var effectFade = false; // Set to 'true' to have slides fade 
 
 var autoRotate = false; // Set to 'true' to have slides auto rotate
-var autoRotateSeconds = 3; // Determines how many seconds before auto rotation
+var autoRotateSeconds = 8; // Determines how many seconds between auto rotations if autoRotate is set to 'true'
+
+// END CUSTOM OPTIONS
 
 $(document).ready(function() {	
 	$.ajax({
