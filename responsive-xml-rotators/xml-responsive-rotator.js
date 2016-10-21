@@ -1,5 +1,11 @@
-var startSlide = 1; 
-var randomSlide = false; 
+var startSlide = 1; // Determines which slide the rotator starts on
+var randomSlide = false; // Set to 'true' to have the rotator start on a random slide
+
+var effectRotate = true;
+var effectFade = false;
+
+var autoRotate = false; // Set to 'true' to have slides auto rotate
+var autoRotateSeconds = 3; // Determines how many seconds before auto rotation
 
 $(document).ready(function() {	
 	$.ajax({
@@ -25,6 +31,8 @@ $(document).ready(function() {
 			if (difference != undefined && difference != 0) {
 				$('.active').removeClass('active');
 				jumpToSpecificSlide(difference);
+				clearTimeout(rotate);
+				runRotateSlides();
 			}
 		}
 		return false;
@@ -32,13 +40,27 @@ $(document).ready(function() {
 	
 	$('.next').click(function() {
 		$('.active').removeClass('active');
-		goToNextSlide();
+		
+		if (effectRotate == true) {
+			goToNextSlide();
+		}
+		
+		clearTimeout(rotate);
+		runRotateSlides();
 	});
 	
 	$('.prev').click(function() {
 		$('.active').removeClass('active');
-		goToPrevSlide();
+		
+		if (effectRotate == true) {
+			goToPrevSlide();
+		}
+		
+		clearTimeout(rotate);
+		runRotateSlides();
 	});
+	
+	runRotateSlides();
 
 });
 
@@ -65,8 +87,21 @@ function buildSlider() {
 		$('.prev').hide();
 	}
 	
-	$('.gallery-inner').css('width', 100 * numSlides + '%');
-	$('.slide').css('width', 100 / numSlides + '%');			
+	if (effectRotate == true) {
+		
+		$('.gallery-inner').css('width', 100 * numSlides + '%');
+		$('.slide').css('width', 100 / numSlides + '%');
+		
+		var currentPos = $('.gallery-inner').position().left;
+		var newPos = currentPos - 100;
+		$('.gallery-inner').animate({
+			left: newPos + '%'
+		});
+		
+	} else if (effectFade == true) {
+		
+		$('.gallery-inner, .slide').css('width', 100 + '%');
+	}
 	
 	$('.slide').each(function(e) {
 		if (e == startSlide - 1) {
@@ -83,7 +118,7 @@ function buildSlider() {
 		lastItem.remove();
 		$('.gallery-inner').prepend(lastItem);
 	} else if (startSlide > 2) {
-		for (i=1; i< startSlide - 1; i++) {
+		for (i = 1; i < startSlide - 1; i++) {
 			var firstItem = $('.slide').first();
 			firstItem.remove();
 			$('.gallery-inner').append(firstItem);
@@ -91,14 +126,10 @@ function buildSlider() {
 	}
 	$('.gallery-inner').css('left', 0);
 	
-	var currentPos = $('.gallery-inner').position().left;
-	var newPos = currentPos - 100;
-	$('.gallery-inner').animate({
-		left: newPos + '%'
-	});
 	
 	$('.gallery-indication').prepend('<div class="slide-indicator"></div>');
-	for (i=1; i<=numSlides; i++) {
+	
+	for (i = 1; i <= numSlides; i++) {
 		$('.slide-indicator').append('<a class="indicator icon-indication" id="indicate-' + i + '" href="#"></a>');
 	}
 	
@@ -329,6 +360,14 @@ function returnToCurrentSlide(position) {
 function rotateSlides() {
 	$('.active').removeClass('active');
 	goToNextSlide();
+}
+
+function runRotateSlides() {
+	if (autoRotate == true) {
+		rotate = setInterval('rotateSlides()', autoRotateSeconds * 1000);
+	} else {
+		// do nothing
+	}
 }
 
 function updateIndicator() {
