@@ -3,8 +3,8 @@
 var startSlide = 1; // Determines which slide the rotator starts on
 var randomSlide = false; // Set to 'true' to have the rotator start on a random slide
 
-var effectRotate = true; // Set to 'true' to have slides rotate
-var effectFade = false; // Set to 'true' to have slides fade 
+var effectRotate = false; // Set to 'true' to have slides rotate
+var effectFade = true; // Set to 'true' to have slides fade 
 
 var autoRotate = false; // Set to 'true' to have slides auto rotate
 var autoRotateSeconds = 8; // Determines how many seconds between auto rotations if autoRotate is set to 'true'
@@ -44,10 +44,7 @@ $(document).ready(function() {
 	
 	$('.next').click(function() {
 		$('.active').removeClass('active');
-		
-		if (effectRotate == true) {
-			goToNextSlide();
-		}
+		goToNextSlide();
 		
 		clearTimeout(rotate);
 		runRotateSlides();
@@ -55,10 +52,7 @@ $(document).ready(function() {
 	
 	$('.prev').click(function() {
 		$('.active').removeClass('active');
-		
-		if (effectRotate == true) {
-			goToPrevSlide();
-		}
+		goToPrevSlide();
 		
 		clearTimeout(rotate);
 		runRotateSlides();
