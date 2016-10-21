@@ -22,6 +22,10 @@ $(document).ready(function() {
 	// BELOW IS THE SLIDER SCRIPT. 
 	// Indication HTML can be changed on lines 99-101
 	// XML function parameters can be changes on lines 346 - 354
+
+	if(effectFade) {
+		$('.gallery-inner').addClass('gallery-fade');
+	}
 	
 	$(document).on('click', '.indicator', function() {
 		var slideNumberClicked = $(this).attr('id');
@@ -98,7 +102,8 @@ function buildSlider() {
 		
 	} else if (effectFade == true) {
 		
-		$('.gallery-inner, .slide').css('width', 100 + '%');
+		$('.gallery-inner, .slide').css('width', '100%');
+		$('.slide').css('width', '100%');
 	}
 	
 	$('.slide').each(function(e) {
