@@ -43,7 +43,7 @@
   <slide>
     <title>Third Slide</title>
     <desc><![CDATA[This is the third slide]]></desc>
-    <image>slide-1.jpg</image>
+    <image>slide-3.jpg</image>
     <imagepos>default</imagepos>
     <imageX>0</imageX>
     <imageY>0</imageY>
@@ -63,7 +63,7 @@
   <slide>
     <title>Fourth Slide</title>
     <desc><![CDATA[This is the fourth slide]]></desc>
-    <image>slide-2.jpg</image>
+    <image>slide-4.jpg</image>
     <imagepos>default</imagepos>
     <imageX>0</imageX>
     <imageY>0</imageY>

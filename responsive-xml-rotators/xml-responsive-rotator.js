@@ -6,7 +6,7 @@ var randomSlide = false; // Set to 'true' to have the rotator start on a random 
 var effectRotate = false; // Set to 'true' to have slides rotate
 var effectFade = true; // Set to 'true' to have slides fade 
 
-var autoRotate = false; // Set to 'true' to have slides auto rotate
+var autoRotate = true; // Set to 'true' to have slides auto rotate
 var autoRotateSeconds = 8; // Determines how many seconds between auto rotations if autoRotate is set to 'true'
 
 // END CUSTOM OPTIONS
@@ -22,6 +22,10 @@ $(document).ready(function() {
 	// BELOW IS THE SLIDER SCRIPT. 
 	// Indication HTML can be changed on lines 99-101
 	// XML function parameters can be changes on lines 346 - 354
+	
+	if (effectRotate) {
+		$('.gallery-inner').addClass('gallery-rotate');
+	}
 	
 	if (effectFade) {
 		$('.gallery-inner').addClass('gallery-fade');
@@ -105,7 +109,6 @@ function buildSlider() {
 		}
 		$(this).attr({
 			id: 'slide' + e,
-			title: ''
 		});
 	});
 	
@@ -305,7 +308,6 @@ function prevSlide() {
 	resizeGallery();
 }
 
-
 function jumpToSpecificSlide(slidesToMove) {
 	if (slidesToMove != undefined && slidesToMove > 0) {
 		if (slidesToMove > 1) { 
@@ -314,12 +316,18 @@ function jumpToSpecificSlide(slidesToMove) {
 				firstItem.remove();
 				$('.gallery-inner').append(firstItem);
 			}
-			newPos = - 100 * (slidesToMove + 1);
-			$('.gallery-inner').animate({
-				left: newPos + '%'
-			}, 200, function() {
+			
+			if (effectRotate) {
+				newPos = - 100 * (slidesToMove + 1);
+				$('.gallery-inner').animate({
+					left: newPos + '%'
+				}, 200, function() {
+					newSlide(slidesToMove);
+				});
+			} else {
 				newSlide(slidesToMove);
-			});
+			}
+			
 		} else {
 			goToNextSlide();
 		}
@@ -330,12 +338,18 @@ function jumpToSpecificSlide(slidesToMove) {
 				lastItem.remove();
 				$('.gallery-inner').prepend(lastItem);
 			}
-			newPos = 0;
-			$('.gallery-inner').animate({
-				left: newPos + '%'
-			}, 200, function() {
+			
+			if (effectRotate) {
+				newPos = 0;
+				$('.gallery-inner').animate({
+					left: newPos + '%'
+				}, 200, function() {
+					newSlide(slidesToMove);
+				});
+			} else {
 				newSlide(slidesToMove);
-			});
+			}
+			
 		} else {
 			goToPrevSlide();
 		}
@@ -343,9 +357,12 @@ function jumpToSpecificSlide(slidesToMove) {
 }
 			
 function newSlide(slidesToMove) {
-	newPos = -100;
+	if (effectRotate) {
+		newPos = -100;
+	} else {
+		newPos = 0;
+	}
 	$('.gallery-inner').css('left', newPos + '%');
-
 	$('.slide').each(function(e) {
 		if(e == 1) {
 			$(this).addClass('active');

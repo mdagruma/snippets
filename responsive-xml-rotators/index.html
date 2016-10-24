@@ -34,45 +34,54 @@ body {
 	background-color: #fff;	
 }
 		
-.gallery-feature {
-	position: relative;	
-	width: 581px;
-	overflow: hidden;
-	height: 100%;
-	margin: 0 auto;
-}
+	.gallery-feature {
+		position: relative;	
+		width: 581px;
+		overflow: hidden;
+		height: 100%;
+		margin: 0 auto;
+	}
+			
+		.gallery-inner {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
 		
-.gallery-inner {
-	position: absolute;
-	top: 0;
-	left: 0;
-}
+			.gallery-rotate .slide {
+				position: relative;
+				display: none;
+				width: 581px;
+				float: left;
+			}
+			
+			.gallery-rotate .slide.active {
+				display: block;
+			}
+	
+				.gallery-rotate .slide img {
+					opacity: 0.7;
+					transition: opacity 0.2s;
+				}
+				
+				.gallery-rotate .slide.active img {
+					opacity: 1;
+				}
+				
+		.gallery-fade .slide {
+			position: absolute;
+			display: inline;
+			float: none;
+			top: 0;
+			left: 0;
+			opacity: 0;
+			transition: opacity 1.5s;
+		}
+		
+		.gallery-fade .slide.active {
+			opacity: 1;
+		}
 
-.gallery .slide {
-	float: left;
-	position: relative;
-	width: 581px;
-	display: none;
-}
-
-.gallery .gallery-fade .slide {
-	position: absolute;
-	top: 0;
-	left: 0;
-}
-
-.gallery .slide img {
-	opacity: 0.8;
-}
-
-.gallery .slide.active img {
-	opacity: 1 !important;
-}
-
-.gallery .slide.active {
-	opacity: 1;	
-	display: block;
-}
 
 .gallery-nav {
 	position: relative;
