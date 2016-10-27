@@ -3,11 +3,10 @@
 var startSlide = 1; // Determines which slide the rotator starts on
 var randomSlide = false; // Set to 'true' to have the rotator start on a random slide
 
-var effectRotate = true; // Set to 'true' to have slides rotate
-var effectFade = false; // Set to 'true' to have slides fade 
+var effectRotate = false; // Set to 'true' to have slides rotate, 'false' will default the transition to a fade
 
-var autoRotate = false; // Set to 'true' to have slides auto rotate
-var autoRotateSeconds = 8; // Determines how many seconds between auto rotations if autoRotate is set to 'true'
+var autoRotate = true; // Set to 'true' to have slides auto rotate
+var autoRotateSeconds = 3; // Determines how many seconds between auto rotations if autoRotate is set to 'true'
 var rotate;
 
 // END CUSTOM OPTIONS
@@ -49,7 +48,6 @@ function gallerySetup() {
 	
 	var navLinks;
 	$('.slide.active').removeClass('active');
-	$('.slide').show();
 	$('.slide-content').hide();
 	$('.gallery-nav').show();
 	if(navLinks == false) {
@@ -60,14 +58,13 @@ function gallerySetup() {
 	if(effectRotate) {
 		buildSlider(numSlides, startSlide);
 		$('.gallery').addClass('gallery-rotate');
-		runRotateSlides();
+		$('.slide').show();
 	} else {
 		$('.gallery').addClass('gallery-fade');
-		buildFader();
+		buildFader(numSlides, startSlide);
 	}
-}
 
-function buildFader() {
+	runRotateSlides();
 }
 
 function buildSlider(numSlides, startSlide) {	
@@ -113,8 +110,29 @@ function buildSlider(numSlides, startSlide) {
 	
 	$('#indicate-' + startSlide).addClass('active');	
 
-} 
-// End buildSlider function
+} // End buildSlider function
+
+
+function buildFader(numSlides, startSlide) {
+		
+	$('.slide').each(function(e) {
+		if (e == startSlide - 1) {
+			$(this).addClass('active');
+		}
+		$(this).attr({
+			id: 'slide' + e,
+			title: ''
+		});
+	});
+	
+	$('.gallery-indication').prepend('<div class="slide-indicator"></div>');
+	
+	for (i = 1; i <= numSlides; i++) {
+		$('.slide-indicator').append('<a class="indicator icon-indication" id="indicate-' + i + '" href="#"></a>');
+	}
+	
+	$('#indicate-' + startSlide).addClass('active');	
+} // End buildFader function
 
 
 $(window).load(function() {
@@ -245,6 +263,7 @@ $(document).on('click', '.gallery-rotate + .gallery-nav .next', function() {
 	goToNextSlide();
 	clearTimeout(rotate);
 	runRotateSlides();
+	return false;
 });
 
 $(document).on('click', '.gallery-rotate + .gallery-nav .prev', function() {
@@ -252,20 +271,8 @@ $(document).on('click', '.gallery-rotate + .gallery-nav .prev', function() {
 	goToPrevSlide();
 	clearTimeout(rotate);
 	runRotateSlides();
+	return false;
 });
-
-// End Gallery Rotate Navigation
-
-
-
-function goToNextSlide() {
-	newPos = - 100 * 2;		
-	$('.gallery-inner').animate({
-		left: newPos + '%'
-	}, function() {
-		nextSlide();
-	});
-}
 
 function goToPrevSlide() {
 	newPos = 0;
@@ -274,6 +281,15 @@ function goToPrevSlide() {
 		left: newPos + '%'
 	}, function() {
 		prevSlide();
+	});
+}
+
+function goToNextSlide() {
+	newPos = - 100 * 2;		
+	$('.gallery-inner').animate({
+		left: newPos + '%'
+	}, function() {
+		nextSlide();
 	});
 }
 
@@ -372,14 +388,69 @@ function returnToCurrentSlide(position) {
 		updateIndicator();
 	});
 }
+// End Gallery Rotate Navigation
+
+
+
+// Begin Gallery Fade Navigation
+
+$(document).on('click', '.gallery-fade .indicator', function() {
+	var slideNumberClicked = $(this).attr('id');
+	slideNumberClicked = slideNumberClicked.split('indicate-');
+	slideNumberClicked = parseInt(slideNumberClicked[1]);
+	$('.active').removeClass('active');
+	$('.gallery .slide:nth-child(' + slideNumberClicked + ')').addClass('active');
+	updateIndicator();
+	clearTimeout(rotate);
+	runRotateSlides();
+	return false;
+});
+
+$(document).on('click', '.gallery-fade + .gallery-nav .next', function() {
+	fadeNextSlide();
+	clearTimeout(rotate);
+	runRotateSlides();
+	return false;
+});
+
+$(document).on('click', '.gallery-fade + .gallery-nav .prev', function() {
+	var active = $('.gallery .active');
+	if(active.is(':first-child')) {
+		$('.active').removeClass('active');
+		$('.gallery .slide:last-child').addClass('active');
+	} else {
+		$('.active').removeClass('active');
+		active.prev().addClass('active');
+	}
+	updateIndicator();
+	clearTimeout(rotate);
+	runRotateSlides();
+	return false;
+});
+
+function fadeNextSlide() {
+	var active = $('.gallery .active');
+	if(active.is(':last-child')) {
+		$('.active').removeClass('active');
+		$('.gallery .slide:first-child').addClass('active');
+	} else {
+		$('.active').removeClass('active');
+		active.next().addClass('active');
+	}
+	updateIndicator();
+}
 
 function rotateSlides() {
-	$('.active').removeClass('active');
-	goToNextSlide();
+	if(effectRotate) {
+		$('.active').removeClass('active');
+		goToNextSlide();
+	} else {
+		fadeNextSlide();
+	}
 }
 
 function runRotateSlides() {
-	if (autoRotate == true) {
+	if (autoRotate) {
 		rotate = setInterval('rotateSlides()', autoRotateSeconds * 1000);
 	} else {
 		// do nothing

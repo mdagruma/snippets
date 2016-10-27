@@ -63,7 +63,17 @@ body {
 	opacity: 1 !important;
 }
 
-.gallery .slide.active {
+.gallery-fade .slide {
+	transition: all 0.2s ease-in;
+	display: block;
+	opacity: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.gallery .slide.active,
+.gallery-fade .slide.active {
 	opacity: 1;	
 	display: block;
 }
