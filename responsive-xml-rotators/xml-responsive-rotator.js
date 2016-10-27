@@ -8,6 +8,7 @@ var effectFade = false; // Set to 'true' to have slides fade
 
 var autoRotate = false; // Set to 'true' to have slides auto rotate
 var autoRotateSeconds = 8; // Determines how many seconds between auto rotations if autoRotate is set to 'true'
+var rotate;
 
 // END CUSTOM OPTIONS
 
@@ -18,57 +19,22 @@ $(document).ready(function() {
 		dataType: 'xml',
 		success: parseXML
 	});
-
-	// BELOW IS THE SLIDER SCRIPT. 
-	// Indication HTML can be changed on lines 99-101
-	// XML function parameters can be changes on lines 346 - 354
-	
-	$(document).on('click', '.indicator', function() {
-		var slideNumberClicked = $(this).attr('id');
-		slideNumberClicked = slideNumberClicked.split('indicate-');
-		slideNumberClicked = parseInt(slideNumberClicked[1]);
-		var activeSlide = $('.slide.active').attr('id');
-		if (activeSlide != undefined) {
-			var slideNum = activeSlide.split('slide');
-			slideNum = parseInt(slideNum[1]) + 1;
-			var difference = slideNumberClicked - slideNum;
-			if (difference != undefined && difference != 0) {
-				$('.active').removeClass('active');
-				jumpToSpecificSlide(difference);
-				clearTimeout(rotate);
-				runRotateSlides();
-			}
-		}
-		return false;
-	});
-	
-	$('.next').click(function() {
-		$('.active').removeClass('active');
-		
-		if (effectRotate == true) {
-			goToNextSlide();
-		}
-		
-		clearTimeout(rotate);
-		runRotateSlides();
-	});
-	
-	$('.prev').click(function() {
-		$('.active').removeClass('active');
-		
-		if (effectRotate == true) {
-			goToPrevSlide();
-		}
-		
-		clearTimeout(rotate);
-		runRotateSlides();
-	});
-	
-	runRotateSlides();
-
 });
 
-function buildSlider() {	
+function parseXML(xml) {
+	$(xml).find('slide').each(function() {
+		var slide = $(this);
+		var imgURL = slide.find('image').text();
+		var imgAlt = slide.find('alt').text();
+		var slideHeader = '<h2>' + slide.find('title').text() + '</h2>';
+		var slideSubhead = '<h3>' + slide.find('desc').text() + '</h3>';
+		
+		$('.gallery-inner').append('<div class="slide"><img src="' + imgURL + '"' + '"alt="' + imgAlt + '" />' + '<div class="gallery-content-container"><div class="gallery-content">' + slideHeader + slideSubhead + '</div></div>' + '</div>');
+	});
+	gallerySetup();
+}
+
+function gallerySetup() {
 	var numSlides = $('.slide').length;
 	
 	if (randomSlide == true) {
@@ -90,22 +56,30 @@ function buildSlider() {
 		$('.next').hide();
 		$('.prev').hide();
 	}
-	
-	if (effectRotate == true) {
-		
-		$('.gallery-inner').css('width', 100 * numSlides + '%');
-		$('.slide').css('width', 100 / numSlides + '%');
-		
-		var currentPos = $('.gallery-inner').position().left;
-		var newPos = currentPos - 100;
-		$('.gallery-inner').animate({
-			left: newPos + '%'
-		});
-		
-	} else if (effectFade == true) {
-		
-		$('.gallery-inner, .slide').css('width', 100 + '%');
+
+	if(effectRotate) {
+		buildSlider(numSlides, startSlide);
+		$('.gallery').addClass('gallery-rotate');
+		runRotateSlides();
+	} else {
+		$('.gallery').addClass('gallery-fade');
+		buildFader();
 	}
+}
+
+function buildFader() {
+}
+
+function buildSlider(numSlides, startSlide) {	
+			
+	$('.gallery-inner').css('width', 100 * numSlides + '%');
+	$('.slide').css('width', 100 / numSlides + '%');
+	
+	var currentPos = $('.gallery-inner').position().left;
+	var newPos = currentPos - 100;
+	$('.gallery-inner').animate({
+		left: newPos + '%'
+	});
 	
 	$('.slide').each(function(e) {
 		if (e == startSlide - 1) {
@@ -138,6 +112,9 @@ function buildSlider() {
 	}
 	
 	$('#indicate-' + startSlide).addClass('active');	
+
+} 
+// End buildSlider function
 
 
 $(window).load(function() {
@@ -242,8 +219,43 @@ $('.gallery-inner')
 	.bind('touchmove', touchmove)
 	.bind('touchend', touchend)
 	.bind('touchcancel', touchcancel);  	
-} 
-// End buildSlider function
+
+// Begin Gallery Rotate Navigation
+$(document).on('click', '.gallery-rotate .indicator', function() {
+	var slideNumberClicked = $(this).attr('id');
+	slideNumberClicked = slideNumberClicked.split('indicate-');
+	slideNumberClicked = parseInt(slideNumberClicked[1]);
+	var activeSlide = $('.slide.active').attr('id');
+	if (activeSlide != undefined) {
+		var slideNum = activeSlide.split('slide');
+		slideNum = parseInt(slideNum[1]) + 1;
+		var difference = slideNumberClicked - slideNum;
+		if (difference != undefined && difference != 0) {
+			$('.active').removeClass('active');
+			jumpToSpecificSlide(difference);
+			clearTimeout(rotate);
+			runRotateSlides();
+		}
+	}
+	return false;
+});
+
+$(document).on('click', '.gallery-rotate + .gallery-nav .next', function() {
+	$('.active').removeClass('active');
+	goToNextSlide();
+	clearTimeout(rotate);
+	runRotateSlides();
+});
+
+$(document).on('click', '.gallery-rotate + .gallery-nav .prev', function() {
+	$('.active').removeClass('active');
+	goToPrevSlide();
+	clearTimeout(rotate);
+	runRotateSlides();
+});
+
+// End Gallery Rotate Navigation
+
 
 
 function goToNextSlide() {
@@ -386,17 +398,4 @@ function resizeGallery() {
 	$('.gallery').animate({
 		height: activeHeight
 	});
-}
-
-function parseXML(xml) {
-	$(xml).find('slide').each(function() {
-		var slide = $(this);
-		var imgURL = slide.find('image').text();
-		var imgAlt = slide.find('alt').text();
-		var slideHeader = '<h2>' + slide.find('title').text() + '</h2>';
-		var slideSubhead = '<h3>' + slide.find('desc').text() + '</h3>';
-		
-		$('.gallery-inner').append('<div class="slide"><img src="' + imgURL + '"' + '"alt="' + imgAlt + '" />' + '<div class="gallery-content-container"><div class="gallery-content">' + slideHeader + slideSubhead + '</div></div>' + '</div>');
-	});
-	buildSlider();
 }
